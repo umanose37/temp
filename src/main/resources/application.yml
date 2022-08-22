@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: peach
+  profiles:
+    active: dev
+
+---
+
+spring:
+  application:
+    name: peach
+  profiles:
+    active: prod
+  datasource:
+    url: jdbc:oracle:thin:@127.0.0.1:1521:XE
+    username: system
+    password: oracle
+#    driver-class-name: oracle.jdbc.driver.OracleDriver
+    driver-class-name: oracle.jdbc.OracleDriver
+
+mybatis:
+  mapper-locations: classpath:mappers/*.xml
+  configuration:
+#    return-instance-for-empty-row: true
+    map-underscore-to-camel-case: true
+#    mapUnderscoreToCamelCase

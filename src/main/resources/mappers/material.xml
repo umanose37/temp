@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.cst.peach.Dao.MatDao">
+    <select id="getMaterialSeq" resultType="Integer">
+        select TMAT_STOCK_SEQ.NEXTVAL from dual
+    </select>
+
+    <select id="checkMatOpQtyOrder" parameterType="Map" resultType="Integer">
+        select
+            count(1)
+        from
+            TMAT_MAT_OP
+        where
+            supply_flg = #{supplyFlg}
+            and del_flg = #{delFlg}
+            and mat_nm = #{matNm}
+            and mat_Qty <![CDATA[ >= ]]> #{matQty}
+    </select>
+    <select id="getMatInSupplyCount" parameterType="com.cst.peach.model.MaterialModel" resultType="Integer">
+        select
+            count(1)
+        from
+            TMAT_MAT_OP
+        where
+            supply_flg = #{supplyFlg}
+            and del_flg = #{delFlg}
+    </select>
+    <select id="getCountOpMaterialExists" parameterType="com.cst.peach.model.MaterialModel" resultType="Integer">
+        select
+            count(1)
+        from
+            TMAT_MAT_OP
+        where
+            mat_id = #{matId}
+            and del_flg = #{delFlg}
+        <if test="supplyFlg != '' and supplyFlg != null">
+            and supply_flg = #{supplyFlg}
+        </if>
+    </select>
+
+    <select id="getMatStockSts" parameterType="Map" resultType="com.cst.peach.model.MaterialModel">
+        select
+            mat_nm
+            , mat_qty
+        from
+            TMAT_STOCK
+        where
+            del_flg = #{delFlg}
+            and use_flg = #{useFlg}
+        order by
+            mat_nm
+    </select>
+
+    <select id="getMatCountByMatNm" parameterType="com.cst.peach.model.MaterialModel" resultType="Integer">
+        select
+            count(1)
+        from
+            TMAT_STOCK
+        where
+            mat_nm = {matNm}
+            and del_flg = #{delFlg}
+            and use_flg = #{useFlg}
+    </select>
+
+    <select id="getMatDisconCountByMatNm" parameterType="com.cst.peach.model.MaterialModel" resultType="Integer">
+        select
+            count(1)
+        from
+            TMAT_STOCK
+        where
+            mat_nm = #{matNm}
+            and use_flg = #{useFlg}
+    </select>
+    <insert id="insertMaterialOp" parameterType="com.cst.peach.model.MaterialModel">
+        insert into TMAT_MAT_OP
+        values
+        (
+            #{matId}
+            , #{matNm}
+            , #{matQty}
+            , #{supplyFlg}
+            , #{delFlg}
+            , #{regId}
+            , #{regUrl}
+            , #{regDts}
+            , #{modId}
+            , #{modUrl}
+            , #{modDts}
+        )
+    </insert>
+    <insert id="saveSupplyMaterial" parameterType="com.cst.peach.model.MaterialModel">
+        merge into TMAT_STOCK
+        using dual
+        on ( mat_nm = #{matNm} and use_flg = #{useFlg} )
+        when matched then
+        update set
+            mat_qty = mat_qty + #{matQty}
+            , del_flg = #{delFlg}
+            , mod_id = #{modId}
+            , mod_url = #{modUrl}
+            , mod_dts = #{modDts}
+        when not matched then
+            insert
+            (
+                mat_id
+                , mat_nm
+                , mat_qty
+                , del_flg
+                , use_flg
+                , reg_id
+                , reg_url
+                , reg_dts
+                , mod_id
+                , mod_url
+                , mod_dts
+            )
+            values
+            (
+                TMAT_STOCK_SEQ.NEXTVAL
+                , #{matNm}
+                , #{matQty}
+                , #{delFlg}
+                , #{useFlg}
+                , #{regId}
+                , #{regUrl}
+                , #{regDts}
+                , #{modId}
+                , #{modUrl}
+                , #{modDts}
+            )
+        <selectKey keyColumn="mat_id" keyProperty="matId" order="AFTER" resultType="Integer">
+            select mat_id from TMAT_STOCK where mat_nm = #{matNm} and use_flg = #{useFlg}
+        </selectKey>
+    </insert>
+    <insert id="insertHisSupplyMatOp" parameterType="com.cst.peach.model.MaterialModel">
+        insert into TMAT_SUPPLY_HIS
+        values
+        (
+            TMAT_SUPPLY_HIS_SEQ.NEXTVAL
+            , #{matId}
+            , #{supplyQty}
+            , #{supplyStDts}
+            , null
+            , #{regId}
+            , #{regUrl}
+            , #{regDts}
+            , #{modId}
+            , #{modUrl}
+            , #{modDts}
+        )
+        <selectKey keyColumn="his_no" keyProperty="hisNo" order="AFTER" resultType="Integer">
+            select his_no from TMAT_SUPPLY_HIS where mat_id = #{matId} and supply_ed_dts is null
+        </selectKey>
+    </insert>
+    <update id="updateHisSupplyMatOp" parameterType="com.cst.peach.model.MaterialModel">
+        update
+            TMAT_SUPPLY_HIS
+        set
+            supply_ed_dts = #{supplyEdDts}
+            , mod_id = #{modId}
+            , mod_url = #{modUrl}
+            , mod_dts = #{modDts}
+        where
+            his_no = #{hisNo}
+    </update>
+    <update id="updateMatOpSupplyFlg" parameterType="com.cst.peach.model.MaterialModel">
+        update
+            TMAT_MAT_OP
+        set
+            supply_flg = #{supplyFlg}
+            , mod_id = #{modId}
+            , mod_url = #{modUrl}
+            , mod_dts = #{modDts}
+        where
+            mat_id = #{matId}
+            and del_flg = #{delFlg}
+    </update>
+    <update id="updateMatStockQty" parameterType="com.cst.peach.model.MaterialModel">
+        update
+            TMAT_STOCK
+        set
+            mat_qty = #{matQty}
+            , mod_id = #{modId}
+            , mod_url = #{modUrl}
+            , mod_dts = #{modDts}
+        where
+            mat_id = #{matId}
+            and del_flg = #{delFlg}
+            and use_flg = #{useFlg}
+    </update>
+</mapper>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.cst.peach.Dao.OrdDao">
+    <select id="getOrdSeq" resultType="Integer">
+        select TORD_ORD_SEQ.NEXTVAL from dual
+    </select>
+    <select id="getOrderInfo" parameterType="com.cst.peach.model.OrderModel" resultType="com.cst.peach.model.OrderModel">
+        select
+            ord_number
+            , order_dtl
+            , amount
+            , ord_status
+            , ord_dts
+            , send_date
+        from
+            TORD_ORD
+        where
+            del_flg = #{delFlg}
+            and to_char(ord_dts, 'YYYYMMDD') = #{orderDate}
+            and ord_number = #{ordNumber}
+            and order_dtl = #{orderDtl}
+    </select>
+    <insert id="insertOrder" parameterType="com.cst.peach.model.OrderModel">
+        insert into TORD_ORD
+            (
+                ord_number
+                , order_dtl
+                , amount
+                , ord_status
+                , ord_dts
+                , send_date
+                , reg_id
+                , reg_url
+                , reg_dts
+                , mod_id
+                , mod_url
+                , mod_dts
+            )
+        values
+            (
+                #{ordNumber}
+                , #{orderDtl}
+                , #{amount}
+                , #{ordStatus}
+                , #{ordDts}
+                , #{sendDate}
+                , #{regId}
+                , #{regUrl}
+                , #{regDts}
+                , #{modId}
+                , #{modUrl}
+                , #{modDts}
+            )
+    </insert>
+
+</mapper>
