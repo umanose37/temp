@@ -23,6 +23,8 @@ class PeachApplicationTests {
 		if (map.containsKey("qty")) System.out.println("qty");
 		if (!map.containsKey("qty")) System.out.println("not qty");
 
+		// test commit 2
+		System.out.println("2");
 	}
 
 }
